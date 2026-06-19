@@ -1,0 +1,8 @@
+requirements.txt
+backend/
+config/
+projects/
+*.py
+.env*
+.git
+.github
