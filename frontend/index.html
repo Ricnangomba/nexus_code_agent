@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Code Agent</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="icon-btn-sm" id="toggleSidebar" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>Nexus</h2>
+            </div>
+
+            <!-- Projects Section -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <h3>Projects</h3>
+                    <button class="icon-btn-sm" id="newProjectBtn" title="New Project">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="project-list" id="projectList">
+                    <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">
+                        <i class="fas fa-folder-open" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
+                        No projects yet.<br>Click + to create one.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files Section -->
+            <div class="sidebar-section" id="filesSection" style="display: none;">
+                <div class="section-header">
+                    <h3>Files</h3>
+                    <button class="icon-btn-sm" id="newFileBtn" title="New File">
+                        <i class="fas fa-file-plus"></i>
+                    </button>
+                </div>
+                <div class="file-tree" id="fileTree"></div>
+            </div>
+
+            <!-- Settings -->
+            <div class="sidebar-footer">
+                <button class="icon-btn-sm full-width" id="settingsBtn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main">
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="breadcrumbs" id="breadcrumbs">
+                    <span class="breadcrumb-item">No project</span>
+                </div>
+                <div class="toolbar-actions">
+                    <button class="btn-icon" id="installExtensionBtn" title="Install Extension">
+                        <i class="fas fa-plug"></i>
+                        Install
+                    </button>
+                    <button class="btn-icon" id="aiBtn" title="Open AI Chat">
+                        <i class="fas fa-sparkles"></i>
+                        AI
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-view="editor">
+                    <i class="fas fa-code"></i>
+                    Editor
+                </button>
+                <button class="tab" data-view="terminal">
+                    <i class="fas fa-terminal"></i>
+                    Terminal
+                </button>
+                <button class="tab" data-view="ai">
+                    <i class="fas fa-robot"></i>
+                    AI Chat
+                </button>
+            </div>
+
+            <!-- Views -->
+            <div class="views">
+                <!-- Editor View -->
+                <div class="view active" id="viewEditor">
+                    <div id="monaco-editor"></div>
+                </div>
+
+                <!-- Terminal View -->
+                <div class="view" id="viewTerminal">
+                    <div id="terminal"></div>
+                </div>
+
+                <!-- AI Chat View -->
+                <div class="view" id="viewAi">
+                    <div class="ai-container">
+                        <div class="ai-messages" id="aiMessages">
+                            <div class="ai-welcome">
+                                <div class="welcome-icon">
+                                    <i class="fas fa-sparkles"></i>
+                                </div>
+                                <h2>Welcome to Nexus AI</h2>
+                                <p>Ask me to help with coding, generate code, or explain concepts.</p>
+                                <div class="suggestion-chips">
+                                    <div class="suggestion-chip" data-prompt="Generate a Python function to calculate fibonacci">
+                                        <i class="fas fa-code"></i>
+                                        Generate Code
+                                    </div>
+                                    <div class="suggestion-chip" data-prompt="Explain how async/await works in JavaScript">
+                                        <i class="fas fa-lightbulb"></i>
+                                        Explain Concepts
+                                    </div>
+                                    <div class="suggestion-chip" data-prompt="Debug this code for me">
+                                        <i class="fas fa-bug"></i>
+                                        Debug Code
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ai-input-area">
+                            <div class="ai-controls">
+                                <label>
+                                    <input type="checkbox" id="useAgent" checked>
+                                    Use Agent Mode
+                                </label>
+                            </div>
+                            <div class="ai-input-bar">
+                                <textarea id="aiInput" placeholder="Ask me anything..." rows="1"></textarea>
+                                <button id="aiSend">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="newProjectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Project</h2>
+                <button class="close-btn" onclick="this.closest('.modal').classList.remove('active')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="projectName" placeholder="Project name" class="input">
+                <select id="projectTemplate" class="input">
+                    <option value="blank">Blank</option>
+                    <option value="python">Python</option>
+                    <option value="node">Node.js</option>
+                    <option value="react">React</option>
+                    <option value="html">HTML</option>
+                </select>
+                <textarea id="projectDescription" placeholder="Description (optional)" class="input" rows="3"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="this.closest('.modal').classList.remove('active')">Cancel</button>
+                <button class="btn-primary" onclick="createProject()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="close-btn" onclick="this.closest('.modal').classList.remove('active')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <label>LLM Provider</label>
+                    <select id="llmProvider" class="input">
+                        <option value="ollama">Ollama</option>
+                        <option value="openai">OpenAI</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label>Model</label>
+                    <input type="text" id="llmModel" class="input" value="llama2-code">
+                </div>
+                <div class="settings-group">
+                    <label>API Key</label>
+                    <input type="password" id="llmApiKey" class="input" placeholder="Optional for Ollama, required for OpenAI">
+                </div>
+                <div class="settings-group">
+                    <label>Endpoint</label>
+                    <input type="text" id="llmEndpoint" class="input">
+                </div>
+                <div class="settings-group">
+                    <label>
+                        <input type="checkbox" id="enableRag">
+                        Enable RAG (Retrieval Augmented Generation)
+                    </label>
+                </div>
+                <div class="settings-group">
+                    <label>Imported Skills</label>
+                    <div id="skillList" class="skill-list"></div>
+                    <button type="button" class="btn-secondary" id="importSkillBtn">Import Skill</button>
+                </div>
+                <div class="settings-group">
+                    <label>Installed Extensions</label>
+                    <div id="extensionList" class="skill-list"></div>
+                    <button type="button" class="btn-secondary" id="importExtensionBtn">Add Extension</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="this.closest('.modal').classList.remove('active')">Cancel</button>
+                <button class="btn-primary" onclick="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="commandPaletteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Command Palette</h2>
+                <button class="close-btn" onclick="closeCommandPalette()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="commandPaletteInput" class="input" placeholder="Type a command..." autocomplete="off">
+                <div id="commandPaletteList" class="command-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.1.0/dist/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.7.0/dist/xterm-addon-fit.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
