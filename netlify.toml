@@ -1,8 +1,13 @@
 [build]
   publish = "frontend"
-  command = "echo 'No build step required for static frontend'"
+  command = "echo 'Static frontend deployment only'"
+  functions = "."
+  ignore = "git diff --quiet HEAD^ HEAD -- backend/ config/ requirements.txt"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+[build.environment]
+  SKIP_PYTHON = "true"
