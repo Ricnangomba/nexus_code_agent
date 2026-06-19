@@ -66,6 +66,12 @@ Edit `config/config.json` to customize:
 - Storage location
 - Security settings
 
+### Deploying to Netlify
+This repository includes a `netlify.toml` that publishes the static frontend from the `frontend/` directory.
+The backend remains a FastAPI app and must be hosted separately for the frontend to call it.
+
+By default, the frontend will be served from Netlify and should be configured to use your deployed backend endpoint via runtime settings.
+
 ### Using Ollama (Recommended for local development)
 
 1. Install Ollama from https://ollama.ai
