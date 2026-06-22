@@ -1,4 +1,19 @@
-// Nexus Code Agent - Frontend Application
+function checkAuth() {
+    const logged = localStorage.getItem("loggedIn");
+    const appEl = document.getElementById("app");
+    if (logged === "true") {
+        if (appEl) appEl.style.display = "block";
+    } else {
+        // Redirect to login page
+        window.location.href = "/login.html";
+    }
+}
+
+// Ensure app is hidden by default until auth check
+document.addEventListener("DOMContentLoaded", () => {
+    const appEl = document.getElementById("app");
+    if (appEl) appEl.style.display = "none";
+});
 // Main application logic and event handlers
 
 const API = {

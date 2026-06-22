@@ -1,0 +1,53 @@
+/* Glass effect overrides for Nexus UI */
+
+/* Sidebar glass panel */
+.sidebar {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    border-right: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: background 0.3s ease;
+}
+
+/* Toolbar glass panel */
+.toolbar {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--shadow);
+    transition: background 0.3s ease;
+}
+
+/* Tabs container */
+.tabs {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--shadow);
+}
+
+/* View panels */
+.views .view {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    padding: 8px;
+}
+
+/* Main app container */
+#app {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: var(--shadow);
+}
+
+/* Hover effects for interactive elements */
+.project-item:hover, .file-tree-item:hover, .tab:hover {
+    background: var(--surface-light);
+    transform: translateY(-1px);
+}
+
+/* Smooth transition for layout changes */
+.sidebar, .toolbar, .tabs, .view, #app {
+    transition: all 0.25s ease;
+}
