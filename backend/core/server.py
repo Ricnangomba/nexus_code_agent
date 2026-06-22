@@ -64,6 +64,8 @@ class NexusServer:
         if frontend_path.exists():
             self.app.mount("/static", StaticFiles(directory=str(frontend_path), html=False), name="static")
             self.frontend_index = frontend_path / "index.html"
+            # Path to the login page for direct serving
+            self.login_page = frontend_path / "login.html"
 
         # Initialize LLM
         self.llm = self._create_llm_provider(config)
@@ -260,6 +262,12 @@ class NexusServer:
             if hasattr(self, "frontend_index") and self.frontend_index.exists():
                 return FileResponse(self.frontend_index)
             raise HTTPException(status_code=404, detail="Frontend not found")
+
+        @self.app.get("/login.html")
+        async def login_page():
+            if hasattr(self, "login_page") and self.login_page.exists():
+                return FileResponse(self.login_page)
+            raise HTTPException(status_code=404, detail="Login page not found")
         
         # WebSocket endpoints
         @self.app.websocket("/ws/chat")
