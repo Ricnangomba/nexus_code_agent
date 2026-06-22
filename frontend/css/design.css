@@ -1,0 +1,60 @@
+/* design.css - Core Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+:root {
+    /* Primary accent */
+    --primary: #58a6ff; /* teal‑blue */
+    --primary-dark: #045a8d;
+    --primary-light: #1aa7f0;
+    /* Surface and background */
+    --background: #0d1117; /* dark */
+    --surface: #161b22;
+    --surface-light: #21262d;
+    --border: #30363d;
+    /* Text */
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --text-subtle: #6e7681;
+    /* Shadows */
+    --shadow: 0 8px 24px rgba(0,0,0,0.12);
+    /* Transitions */
+    --duration: 0.25s;
+    --ease: ease;
+}
+
+/* Global resets */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    overflow: hidden;
+}
+
+/* Utility classes */
+.p-2 { padding: 0.5rem; }
+.m-2 { margin: 0.5rem; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+
+/* Glass‑morphic helper */
+.glass-panel {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    transition: background var(--duration) var(--ease), transform var(--duration) var(--ease);
+}
+
+/* Hover elevation */
+.glass-panel:hover {
+    background: rgba(255,255,255,0.06);
+    transform: translateY(-2px);
+}

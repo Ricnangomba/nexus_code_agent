@@ -1,0 +1,86 @@
+/* Glassmorphic Login Page Styles */
+
+:root {
+    --login-bg: rgba(255, 255, 255, 0.08);
+    --login-blur: 10px;
+    --login-border: rgba(255, 255, 255, 0.2);
+    --primary: #58a6ff; /* nice blue */
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+body.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: var(--background);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+}
+
+.login-card {
+    backdrop-filter: blur(var(--login-blur));
+    background: var(--login-bg);
+    border: 1px solid var(--login-border);
+    border-radius: 12px;
+    padding: 2rem 3rem;
+    box-shadow: var(--shadow);
+    width: 320px;
+    text-align: center;
+    color: var(--text);
+    animation: fadeIn 0.5s ease;
+}
+
+.login-card h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    color: var(--primary);
+}
+
+.login-card input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.12);
+    color: var(--text);
+    font-size: 0.95rem;
+    outline: none;
+    transition: background 0.2s;
+}
+
+.login-card input::placeholder {
+    color: var(--text-muted);
+}
+
+.login-card input:focus {
+    background: rgba(255,255,255,0.2);
+}
+
+.login-card button {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.login-card button:hover {
+    background: #539bf5;
+}
+
+.login-card button:active {
+    transform: translateY(1px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
