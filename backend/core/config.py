@@ -9,9 +9,19 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 
 
+def deep_update(d: Dict[str, Any], u: Dict[str, Any]) -> Dict[str, Any]:
+    """Recursively update a dictionary"""
+    for k, v in u.items():
+        if isinstance(v, dict):
+            d[k] = deep_update(d.get(k, {}) or {}, v)
+        else:
+            d[k] = v
+    return d
+
+
 def load_config() -> Dict[str, Any]:
     """Load configuration from file or environment"""
-    config_path = Path(__file__).parent.parent / "config" / "config.json"
+    config_path = Path(__file__).parent.parent.parent / "config" / "config.json"
     
     # Default configuration
     default_config = {
@@ -24,8 +34,8 @@ def load_config() -> Dict[str, Any]:
         },
         "llm": {
             "provider": os.getenv("LLM_PROVIDER", "ollama"),
-            "model": os.getenv("LLM_MODEL", "llama2-code"),
-            "preferred_models": ["llama2-code", "mistral-code", "codegen-3b"],
+            "model": os.getenv("LLM_MODEL", "qwen2.5-coder:latest"),
+            "preferred_models": ["qwen2.5-coder:latest", "qwen2.5-coder:7b", "llama2-code", "mistral-code", "codegen-3b"],
             "timeout_seconds": int(os.getenv("LLM_TIMEOUT", 300)),
             "retries": int(os.getenv("LLM_RETRIES", 2)),
             "concurrency": int(os.getenv("LLM_CONCURRENCY", 2)),
@@ -53,7 +63,7 @@ def load_config() -> Dict[str, Any]:
         try:
             with open(config_path, 'r') as f:
                 file_config = json.load(f)
-                default_config.update(file_config)
+                deep_update(default_config, file_config)
         except Exception as e:
             print(f"Warning: Could not load config file: {e}")
     
@@ -80,20 +90,11 @@ def get_config_value(key: str, default: Any = None) -> Any:
 def update_config(updates: Dict[str, Any]) -> bool:
     """Update configuration file"""
     try:
-        config_path = Path(__file__).parent.parent / "config" / "config.json"
+        config_path = Path(__file__).parent.parent.parent / "config" / "config.json"
         config_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Load existing config
         config = load_config()
-        
-        # Deep update
-        def deep_update(d, u):
-            for k, v in u.items():
-                if isinstance(v, dict):
-                    d[k] = deep_update(d.get(k, {}), v)
-                else:
-                    d[k] = v
-            return d
         
         config = deep_update(config, updates)
         

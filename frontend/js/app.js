@@ -39,17 +39,52 @@ const API = {
     }
 };
 
+const Cache = {
+    set: (key, val) => localStorage.setItem(key, JSON.stringify(val)),
+    get: (key) => JSON.parse(localStorage.getItem(key)),
+    remove: (key) => localStorage.removeItem(key)
+};
+
+const debounce = (fn, delay) => {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), delay);
+    };
+};
+
 const state = {
     currentProject: null,
     currentFile: null,
     fileContent: "",
     editor: null,
     terminal: null,
+    terminalBuffer: "",
     ws: null,
     chatWs: null,
     isStreaming: false,
     skills: [],
-    extensions: []
+    extensions: [],
+    chatHistory: []
+};
+
+const saveState = () => {
+    Cache.set("nexus_state", {
+        currentProject: state.currentProject,
+        currentFile: state.currentFile,
+        chatHistory: state.chatHistory,
+        terminalBuffer: state.terminalBuffer
+    });
+};
+
+const loadState = () => {
+    const saved = Cache.get("nexus_state");
+    if (saved) {
+        state.currentProject = saved.currentProject;
+        state.currentFile = saved.currentFile;
+        state.chatHistory = saved.chatHistory || [];
+        state.terminalBuffer = saved.terminalBuffer || "";
+    }
 };
 
 const commandPaletteCommands = [
@@ -61,6 +96,7 @@ const commandPaletteCommands = [
 
 // Initialization
 document.addEventListener("DOMContentLoaded", async () => {
+    loadState();
     showLoading("Starting Nexus...");
     try {
         await loadStatus();
@@ -76,6 +112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         await loadLLMStatus();
         hideLoading();
         notify("Welcome to Nexus Code Agent!", "success");
+        state.chatHistory.forEach(msg => addMessage(msg.role, msg.content, msg.isHTML));
     } catch (e) {
         console.error(e);
         hideLoading();
@@ -115,10 +152,10 @@ function setupMonaco() {
         
         state.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, saveCurrentFile);
         state.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, runCode);
-        state.editor.onDidChangeModelContent(() => {
+        state.editor.onDidChangeModelContent(debounce(() => {
             state.fileContent = state.editor.getValue();
             updateBreadcrumbs();
-        });
+        }, 500));
     });
 }
 
@@ -131,9 +168,12 @@ function setupTabs() {
             document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
             tab.classList.add("active");
             document.getElementById("view" + view.charAt(0).toUpperCase() + view.slice(1)).classList.add("active");
-            
+
             if (view === "terminal" && state.terminal) {
                 setTimeout(() => state.terminal.fit(), 50);
+            }
+            if (view === "preview") {
+                updatePreview();
             }
         });
     });
@@ -300,6 +340,7 @@ async function createProject() {
 async function openProject(name) {
     state.currentProject = name;
     state.currentFile = null;
+    saveState();
     document.querySelectorAll(".project-item").forEach(item => {
         item.classList.toggle("active", item.dataset.project === name);
     });
@@ -319,6 +360,7 @@ async function deleteProject(name) {
         if (state.currentProject === name) {
             state.currentProject = null;
             state.currentFile = null;
+            saveState();
             state.editor.setValue("// Project deleted");
             document.getElementById("filesSection").style.display = "none";
         }
@@ -411,6 +453,7 @@ async function openFile(path) {
         const data = await API.post("/api/file/read", { project: state.currentProject, path });
         state.currentFile = path;
         state.fileContent = data.content;
+        saveState();
         
         if (state.editor) {
             const ext = path.split(".").pop();
@@ -461,6 +504,7 @@ async function deleteFile(path) {
         await API.post("/api/file/delete", { project: state.currentProject, path });
         if (state.currentFile === path) {
             state.currentFile = null;
+            saveState();
             state.editor.setValue("");
         }
         await loadFileTree(state.currentProject);
@@ -476,7 +520,7 @@ function updateBreadcrumbs() {
         el.innerHTML = '<span class="breadcrumb-item">No project</span>';
         return;
     }
-    
+
     let html = `<span class="breadcrumb-item">${state.currentProject}</span>`;
     if (state.currentFile) {
         html += '<span class="breadcrumb-separator">/</span>';
@@ -488,6 +532,22 @@ function updateBreadcrumbs() {
         html += `<span class="breadcrumb-item active">${file}</span>`;
     }
     el.innerHTML = html;
+}
+
+/**
+ * Refreshes the preview iframe with the current editor content.
+ * If no file is open, displays a placeholder message.
+ */
+function updatePreview() {
+    const iframe = document.getElementById("previewIframe");
+    if (!iframe) return;
+    if (!state.currentFile) {
+        iframe.srcdoc = '<p>No file selected for preview.</p>';
+        return;
+    }
+    // Use the editor's current value as the HTML source.
+    const content = state.editor ? state.editor.getValue() : '';
+    iframe.srcdoc = content;
 }
 
 // ==================== CHAT ====================
@@ -506,6 +566,8 @@ function setupChat() {
         if (welcome) welcome.remove();
         
         addMessage("user", message);
+        state.chatHistory.push({ role: "user", content: message });
+        saveState();
         
         const useAgent = document.getElementById("useAgent").checked;
         if (useAgent) await runAgent(message);
@@ -570,6 +632,8 @@ async function runChat(message) {
             } else if (data.type === "error") {
                 textEl.innerHTML = `<span style="color: var(--error)">Error: ${data.message}</span>`;
             } else if (data.type === "done") {
+                state.chatHistory.push({ role: "assistant", content: fullText });
+                saveState();
                 ws.close();
             }
         };
@@ -610,6 +674,8 @@ async function runAgent(task) {
                 textEl.innerHTML = stepsHtml;
                 document.getElementById("aiMessages").scrollTop = document.getElementById("aiMessages").scrollHeight;
             } else if (data.type === "done") {
+                state.chatHistory.push({ role: "assistant", content: stepsHtml, isHTML: true });
+                saveState();
                 ws.close();
             }
         };
@@ -640,6 +706,7 @@ function setupTerminal() {
         window.addEventListener("resize", () => fitAddon.fit());
     }
     state.terminal = term;
+    term.buffer.active.getLine(0);
 }
 
 // ==================== PROJECT HANDLERS ====================

@@ -10,18 +10,31 @@
     "provider": "ollama",
     "model": "qwen2.5-coder:latest",
     "preferred_models": [
-      "qwen2.5-coder:latest",
-      "qwen2.5-coder:7b"
+      "llama2-code",
+      "mistral-code",
+      "codegen-3b"
     ],
+    "timeout_seconds": 300,
+    "retries": 2,
+    "concurrency": 2,
     "api_key": "",
     "endpoint": "http://localhost:11434"
   },
+  "rag": {
+    "enabled": false,
+    "sources": []
+  },
+  "skills": [],
+  "extensions": [],
   "storage": {
     "base_path": "./projects",
     "max_project_size": 1000000000
   },
   "security": {
-    "allowed_domains": ["localhost", "127.0.0.1"],
+    "allowed_domains": [
+      "localhost",
+      "127.0.0.1"
+    ],
     "cors_enabled": true
   }
 }
