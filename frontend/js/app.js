@@ -705,24 +705,7 @@ async function runAgent(task) {
 }
 
 // ==================== TERMINAL ====================
-function setupTerminal() {
-    if (typeof Terminal === "undefined") {
-        console.error("Terminal is not defined. Ensure xterm.js is loaded.");
-        return;
-    }
-    const term = new Terminal({ theme: { background: "#0d1117" } });
-    const fitAddon = typeof FitAddon !== "undefined" ? new FitAddon() : null;
-    if (fitAddon) {
-        term.loadAddon(fitAddon);
-    }
-    term.open(document.getElementById("terminal"));
-    if (fitAddon) {
-        fitAddon.fit();
-        window.addEventListener("resize", () => fitAddon.fit());
-    }
-    state.terminal = term;
-    term.buffer.active.getLine(0);
-}
+
 
 // ==================== PROJECT HANDLERS ====================
 function setupProjectHandlers() {

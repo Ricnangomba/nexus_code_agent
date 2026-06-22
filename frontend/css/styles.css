@@ -46,7 +46,9 @@ html, body {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+    overflow: hidden; /* added */
     transition: margin-left 0.3s ease;
+    min-height: 0; /* added */
 }
 
 .sidebar-header {
